@@ -92,6 +92,7 @@ venv.bak/
 *.model
 *.bin
 
+*log*
 # macOS
 .DS_Store
 
@@ -101,9 +102,14 @@ geckodriver
 classfication/BAG/crawling/mtspot/google-chrome-stable_current_amd64.deb.1
 
 #model
-classfication/BAG/Classfication/gambling_bert_logs/
-classfication/BAG/Classfication/gambling_bert_model/
-classfication/BAG/Classfication/gambling_bert_results/
+classfication/BAG/Classfication/bert/gambling_bert_logs/
+classfication/BAG/Classfication/bert/gambling_bert_model/
+classfication/BAG/Classfication/bert/gambling_bert_results/
+classfication/BAG/Classfication/gnn_models/models/
 
+classfication/BAG/Classfication/gambling_gnn_models/gnn_model*
 #data
 classfication/BAG/data
+
+
+classfication/BAG/Classfication/gnn_models/gnn_logs

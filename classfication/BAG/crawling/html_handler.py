@@ -403,7 +403,7 @@ class HTMLHandler:
         """
         # 기본 모델 경로 설정
         if model_path is None:
-            model_path = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/gambling_bert_model"
+            model_path = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/gambling_bert_model"
             if not os.path.exists(model_path):
                 print(f"경고: 기본 모델 경로 '{model_path}'가 존재하지 않습니다.")
                 # 현재 디렉토리에서 모델 경로 확인
@@ -541,7 +541,7 @@ def main():
     handler = HTMLHandler()
     
     # 모델 경로 확인 (사용자 지정 또는 기본값)
-    model_path = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/gambling_bert_model"
+    model_path = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/gambling_bert_model"
     if not os.path.exists(model_path):
         print(f"지정된 모델 경로 '{model_path}'가 존재하지 않습니다.")
         model_path = None  # add_gambling_scores_to_graph 함수에서 대체 경로를 찾도록 함

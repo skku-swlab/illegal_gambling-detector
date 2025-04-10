@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup
 import networkx as nx
 
 # 저장할 파일 시작 번호 (사용자가 이 값을 변경할 수 있음)
-START_FILE_NUMBER = 13
+START_FILE_NUMBER = 1
 
 # BERT 모델 경로
-MODEL_PATH = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/gambling_bert_model"
+MODEL_PATH = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/bert/gambling_bert_model"
 
 # 그래프 JSON 파일 저장 디렉토리
-GRAPH_SAVE_DIR = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/gnn_datset"
+GRAPH_SAVE_DIR = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/gnn_datset/normal"
 
 def html_to_graph(html_content):
     """
@@ -28,6 +28,15 @@ def html_to_graph(html_content):
     """
     # BeautifulSoup으로 HTML 파싱
     soup = BeautifulSoup(html_content, 'html.parser')
+    
+    # HTML 태그가 없는 경우 처리
+    if soup.html is None:
+        print("경고: 유효한 HTML 문서가 아닙니다. 루트 HTML 태그가 없습니다.")
+        # 빈 그래프 생성
+        G = nx.DiGraph()
+        # 루트 노드 추가 (최소한의 노드 필요)
+        G.add_node(0, tag="root", text=html_content[:100] + "..." if len(html_content) > 100 else html_content, node_type='tag')
+        return G
     
     # 그래프 생성
     G = nx.DiGraph()  # 방향성 그래프 사용 (부모->자식)
@@ -89,20 +98,20 @@ def add_gambling_scores_to_graph(graph, model_path=None):
     if model_path is None:
         model_path = MODEL_PATH
         if not os.path.exists(model_path):
-            print(f"경고: 기본 모델 경로 '{model_path}'가 존재하지 않습니다.")
+            print(f"오류: 기본 모델 경로 '{model_path}'가 존재하지 않습니다.")
             # 현재 디렉토리에서 모델 경로 확인
             current_dir_model = "./gambling_bert_model"
             if os.path.exists(current_dir_model):
                 model_path = current_dir_model
                 print(f"대체 모델 경로 '{model_path}'를 사용합니다.")
             else:
-                print(f"오류: 모델을 찾을 수 없습니다. 점수 추가를 건너뜁니다.")
+                print(f"오류: 모델 경로 '{model_path}'가 존재하지 않습니다.")
                 return graph
     
     try:
         # 모델 경로 확인
         if not os.path.exists(model_path):
-            print(f"오류: 모델 경로 '{model_path}'가 존재하지 않습니다. 점수 추가를 건너뜁니다.")
+            print(f"오류: 모델 경로 '{model_path}'가 존재하지 않습니다.")
             return graph
         
         print(f"사용할 모델 경로: {model_path}")
@@ -202,7 +211,7 @@ def add_gambling_scores_to_graph(graph, model_path=None):
         print(f"불법도박 점수 추가 중 오류 발생: {e}")
         print("상세 오류:")
         traceback.print_exc()
-        return graph  # 오류 발생해도 원본 그래프 반환
+        return graph
 
 def graph_to_json_data(graph):
     """
@@ -275,48 +284,71 @@ def save_graph_as_json(graph, filename):
         print(f"그래프 저장 중 오류 발생: {e}")
         return None
 
-def process_html_file(html_file_path, file_number):
+def process_html_file(html_file_path, output_json_path):
     """
     HTML 파일을 처리하여 그래프로 변환하고 점수를 추가한 후 JSON으로 저장합니다.
     
     Args:
         html_file_path (str): 처리할 HTML 파일 경로
-        file_number (int): 저장할 파일 번호
+        output_json_path (str): 저장할 JSON 파일 경로
         
     Returns:
-        bool: 처리 성공 여부
+        str: 저장된 JSON 파일 경로 또는 None
     """
     try:
+        # 출력 디렉토리 확인
+        output_dir = os.path.dirname(output_json_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+            
         # HTML 파일 읽기
         with open(html_file_path, 'r', encoding='utf-8') as f:
             html_content = f.read()
         
+        # HTML 내용이 비어있는지 확인
+        if not html_content.strip():
+            print(f"경고: HTML 파일 '{html_file_path}'이 비어 있거나 공백만 포함하고 있습니다.")
+            return None
+        
         # HTML을 그래프로 변환
-        graph = html_to_graph(html_content)
-        if graph:
-            # 불법도박 점수 추가
-            print("불법도박 점수 분석 시작...")
-            graph = add_gambling_scores_to_graph(graph, model_path=MODEL_PATH)
+        try:
+            graph = html_to_graph(html_content)
+        except Exception as e:
+            print(f"HTML 파싱 중 오류 발생: {e}")
+            print("기본 그래프를 생성합니다.")
+            graph = nx.DiGraph()
+            graph.add_node(0, tag="root", text=html_content[:100] + "..." if len(html_content) > 100 else html_content, node_type='tag')
             
-            # 파일명 생성 (일련번호 기반)
-            filename = f"{file_number}.json"
-            
-            # 그래프를 JSON으로 저장
-            save_graph_as_json(graph, filename)
-            return True
-        else:
+        if graph is None:
             print(f"HTML 파일 '{html_file_path}'을 그래프로 변환하는 데 실패했습니다.")
-            return False
+            return None
+            
+        # 불법도박 점수 추가
+        print("불법도박 점수 분석 시작...")
+        graph = add_gambling_scores_to_graph(graph)
+        
+        # 그래프를 JSON으로 직렬화
+        graph_data = graph_to_json_data(graph)
+        
+        # JSON 파일로 저장
+        with open(output_json_path, 'w', encoding='utf-8') as f:
+            json.dump(graph_data, f, ensure_ascii=False, indent=2)
+        
+        print(f"그래프가 JSON 파일 '{output_json_path}'로 저장되었습니다.")
+        return output_json_path
+        
     except Exception as e:
         print(f"HTML 파일 '{html_file_path}' 처리 중 오류 발생: {e}")
-        return False
+        import traceback
+        traceback.print_exc()
+        return None
 
 def main():
     """
     메인 실행 함수: 지정된 디렉토리 아래의 모든 HTML 파일을 처리합니다.
     """
     # HTML 파일이 있는 디렉토리 경로
-    html_dir = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/self_download"
+    html_dir = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/crawled_html_files/normal"
     
     # 디렉토리 내의 모든 HTML 파일 찾기
     html_files = [os.path.join(html_dir, f) for f in os.listdir(html_dir) if f.endswith('.html')]
@@ -333,7 +365,9 @@ def main():
     # 각 HTML 파일 처리
     for html_file_path in html_files:
         print(f"\n파일 처리 시작: {html_file_path}")
-        process_html_file(html_file_path, current_file_number)
+        # 파일 번호를 문자열로 변환하여 JSON 파일 경로 생성
+        output_json_path = os.path.join(GRAPH_SAVE_DIR, f"{current_file_number}.json")
+        process_html_file(html_file_path, output_json_path)
         current_file_number += 1
 
 if __name__ == "__main__":
