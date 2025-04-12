@@ -6,6 +6,10 @@ from torch_geometric.data import Data
 
 # 모델 로드 함수
 def load_model(model_path, input_dim, hidden_dim, num_heads, dropout, gambling_weight, device):
+    """
+    업데이트된 모델 구조로 모델을 로드합니다.
+    3개의 GAT 레이어와 레이어 정규화를 포함합니다.
+    """
     model = GamblingGATModel(
         input_dim=input_dim,
         hidden_dim=hidden_dim,
@@ -14,8 +18,10 @@ def load_model(model_path, input_dim, hidden_dim, num_heads, dropout, gambling_w
         dropout=dropout,
         gambling_weight=gambling_weight
     ).to(device)
-    model.load_state_dict(torch.load(model_path))
-    model.eval()
+    
+    # 모델 가중치 로드
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.eval()  # 평가 모드로 설정
     return model
 
 # JSON 파일을 PyTorch Geometric 데이터로 변환하는 함수
@@ -61,21 +67,25 @@ def inference(model, data, device):
 # 메인 함수
 def main():
     # 설정 값
-    model_path = '/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/gnn_models/models/gambling_gat_binary_20250410_223921_final.pt'  # 저장된 모델 경로 (binary 모델 사용)
-    file_path = '/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/inference_json/110.json'  # 추론할 파일 경로
+    model_path = '/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/gnn_models/models/model_6/gambling_gat_binary_20250412_045321_final.pt'  # 저장된 모델 경로 (binary 모델 사용)
+    file_path = '/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/gnn_datset/illegal/103.json'  # 추론할 파일 경로
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
 
     # 데이터 로드
     data = load_data_from_json(file_path)
 
-    # 모델 로드
+    # 모델 하이퍼파라미터 설정 (train.py와 동일하게 유지)
     input_dim = data.x.shape[1]  # 노드 특성 차원
     hidden_dim = 64
     num_heads = 8
-    dropout = 0.2
-    gambling_weight = 20.0  # train.py와 동일한 값 사용
+    dropout = 0.3  # 학습 시와 동일한 드롭아웃 비율 사용
+    gambling_weight = 100.0  # 학습 시와 동일한 gambling_weight 값 사용
+    
+    # 모델 로드 - 업데이트된 load_model 함수 사용
+    print('모델 로드 중...')
     model = load_model(model_path, input_dim, hidden_dim, num_heads, dropout, gambling_weight, device)
+    print('모델 로드 완료')
 
     # 추론 수행
     print('추론 시작...')

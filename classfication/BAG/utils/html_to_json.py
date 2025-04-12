@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup
 import networkx as nx
 
 # 저장할 파일 시작 번호 (사용자가 이 값을 변경할 수 있음)
-START_FILE_NUMBER = 1
+START_FILE_NUMBER = 109
 
 # BERT 모델 경로
 MODEL_PATH = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/bert/gambling_bert_model"
 
 # 그래프 JSON 파일 저장 디렉토리
-GRAPH_SAVE_DIR = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/gnn_datset/normal"
+GRAPH_SAVE_DIR = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/inference_json"
 
 def html_to_graph(html_content):
     """
@@ -348,7 +348,7 @@ def main():
     메인 실행 함수: 지정된 디렉토리 아래의 모든 HTML 파일을 처리합니다.
     """
     # HTML 파일이 있는 디렉토리 경로
-    html_dir = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/crawled_html_files/normal"
+    html_dir = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/crawled_html_files/self_download"
     
     # 디렉토리 내의 모든 HTML 파일 찾기
     html_files = [os.path.join(html_dir, f) for f in os.listdir(html_dir) if f.endswith('.html')]

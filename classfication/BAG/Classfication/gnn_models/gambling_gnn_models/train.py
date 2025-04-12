@@ -251,20 +251,22 @@ def main():
     # 설정 값 고정
     base_dir = '/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/gnn_datset'
     test_size = 0.1
-    batch_size = 16
-    epochs = 5000
+    batch_size = 16  # 배치 크기 (배치 정규화를 위해 중요)
+    epochs = 3000
     lr = 0.001
-    weight_decay = 1e-5
+    weight_decay = 1e-5  # L2 정규화 (과적합 방지)
     hidden_dim = 64
     num_heads = 8
-    dropout = 0.3
-    gambling_weight = 20.0  # gambling_score에 적용할 가중치
-    save_every = 1000  # 100 에폭마다 모델 저장
+    dropout = 0.8  # 드롭아웃 비율 증가 (과적합 방지)
+    gambling_weight = 30.0  # gambling_score에 적용할 가중치
+    save_every = 1500  # 100 에폭마다 모델 저장
     seed = 42
     
     # 시드 고정
     torch.manual_seed(seed)
     np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True  # 재현성을 위한 추가 설정
+    torch.backends.cudnn.benchmark = False
     
     # 디바이스 설정
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

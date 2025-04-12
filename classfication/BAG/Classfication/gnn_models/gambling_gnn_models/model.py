@@ -85,72 +85,70 @@ class GamblingGATModel(nn.Module):
         self.gat2 = GamblingGATConv(hidden_dim, hidden_dim, heads=num_heads, dropout=dropout, gambling_weight=gambling_weight)
         self.gat3 = GamblingGATConv(hidden_dim, hidden_dim, heads=num_heads, dropout=dropout, gambling_weight=gambling_weight)
         
-        # 잔차 연결을 위한 투영 레이어 (차원이 다른 경우)
+        # 잔차 연결을 위한 투영 레이어
         self.proj1 = nn.Linear(input_dim, hidden_dim) if input_dim != hidden_dim else None
+        self.proj2 = nn.Linear(hidden_dim, hidden_dim)
+        self.proj3 = nn.Linear(hidden_dim, hidden_dim)
         
-        # 배치 정규화 레이어 (과적합 방지 및 학습 안정화)
-        self.batch_norm1 = nn.BatchNorm1d(hidden_dim)
-        self.batch_norm2 = nn.BatchNorm1d(hidden_dim)
+        # 레이어 정규화만 사용 (배치 정규화 제거)
+        self.norm1 = nn.LayerNorm(hidden_dim)
+        self.norm2 = nn.LayerNorm(hidden_dim)
+        self.norm3 = nn.LayerNorm(hidden_dim)
         
-        # 최종 분류 레이어 (이진 분류용)
+        # 도박 스코어 임베딩 레이어
+        self.gambling_embedding = nn.Linear(1, hidden_dim)
+        
+        # 최종 분류 레이어
         self.classifier = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim // 2),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim // 2, output_dim),
-            nn.Sigmoid()  # 이진 분류를 위한 시그모이드
+            nn.Sigmoid()
         )
         
-        # 드롭아웃 비율
         self.dropout_rate = dropout
     
     def forward(self, data):
         x, edge_index, gambling_scores = data.x, data.edge_index, data.gambling_scores
-        batch = data.batch if hasattr(data, 'batch') else None
         
-        # 첫 번째 GAT 레이어 통과
+        # 도박 스코어 임베딩
+        gambling_emb = self.gambling_embedding(gambling_scores.unsqueeze(-1))
+        
+        # 첫 번째 레이어
         identity = x
         x = self.gat1(x, edge_index, gambling_scores)
-        x = F.relu(x)
-        
-        # 잔차 연결 (Residual Connection) - 첫 번째 레이어
+        x = self.norm1(x + gambling_emb)  # 도박 스코어 정보 추가
         if self.proj1 is not None:
             identity = self.proj1(identity)
         x = x + identity  # 잔차 연결
-        
-        # 배치 정규화 및 드롭아웃
-        if batch is not None:
-            x = self.batch_norm1(x)
+        x = F.relu(x)
         x = F.dropout(x, p=self.dropout_rate, training=self.training)
         
-        # 두 번째 GAT 레이어 통과
+        # 두 번째 레이어
         identity = x
         x = self.gat2(x, edge_index, gambling_scores)
-        x = F.relu(x)
-        
-        # 잔차 연결 (Residual Connection) - 두 번째 레이어
+        x = self.norm2(x + gambling_emb)  # 도박 스코어 정보 추가
+        identity = self.proj2(identity)
         x = x + identity  # 잔차 연결
-        
-        # 배치 정규화 및 드롭아웃
-        if batch is not None:
-            x = self.batch_norm2(x)
+        x = F.relu(x)
         x = F.dropout(x, p=self.dropout_rate, training=self.training)
         
-        # 세 번째 GAT 레이어 통과
+        # 세 번째 레이어
         identity = x
         x = self.gat3(x, edge_index, gambling_scores)
+        x = self.norm3(x + gambling_emb)  # 도박 스코어 정보 추가
+        identity = self.proj3(identity)
+        x = x + identity  # 잔차 연결
         x = F.relu(x)
         
-        # 잔차 연결 (Residual Connection) - 세 번째 레이어
-        x = x + identity  # 잔차 연결
-        
-        # 그래프 레벨 표현 (그래프 풀링)
-        if batch is not None:
-            x = global_mean_pool(x, batch)
+        # 그래프 레벨 표현
+        if hasattr(data, 'batch'):
+            x = global_mean_pool(x, data.batch)
         else:
             x = x.mean(dim=0, keepdim=True)
         
-        # 분류 (이진 분류)
+        # 분류
         x = self.classifier(x)
         
         return x 
