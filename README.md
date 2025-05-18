@@ -16,7 +16,7 @@ We utilize the spam SMS dataset provided by KISA to periodically extract and upd
 4. Social Media Crawling  
 We crawl promotional posts from platforms such as Instagram, X (formerly Twitter), and Facebook to identify and collect illegal gambling URLs.  
 
-5. Telegram sLLM Chatbot  
+5. Telegram sLLM Chatbot [LLM Spear Phishing Chatbot] 
 To ensure more precise enforcement, blocking must go beyond URLs to include associated bank account numbers. We are developing a specialized sLLM-based Telegram chatbot capable of extracting bank account information from chat messages.  
 
 🤖 AI-Based Classification Modules  
