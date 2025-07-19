@@ -11,7 +11,7 @@ install_result = subprocess.run(
 )
 
 # Hugging Face 토큰을 아래에 직접 입력하세요
-HF_TOKEN = "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"
+HF_TOKEN = "YOUR TOKEN"
 
 try:
     from huggingface_hub import login
