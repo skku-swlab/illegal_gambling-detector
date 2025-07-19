@@ -1,4 +1,7 @@
 ### **[Tracking Illegal Gambling Website]** (2024.10 ~ 2025.7)  **[Selected 2025-1 SKKU CO-Deeplearning]** 
+<img width="873" height="1116" alt="Screenshot 2025-07-19 at 7 24 24 PM" src="https://github.com/user-attachments/assets/003d4af3-c702-47a9-9130-00a765f34eb5" />
+
+
 The operation of illegal gambling websites poses a serious threat to our society.  
 However, manually identifying and blocking these sites is highly impractical.  
 To address this challenge, our SWLab has developed an AI-powered tracking system for detecting illegal gambling websites.  
