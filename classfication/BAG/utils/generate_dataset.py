@@ -9,7 +9,7 @@ import os
 import sys
 
 # OpenAI API 키 설정
-openai.api_key = "YOUR-API-KEY"
+openai.api_key = "###"
 
 def get_random_keywords(keywords, num_keywords=10):
     """랜덤하게 키워드를 선택"""
