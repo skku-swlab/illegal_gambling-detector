@@ -1,7 +1,7 @@
 import os
 import json
 import torch
-from model import GamblingGATModel
+from Classfication.gnn_models.gambling_gnn_models.model import GamblingGATModel
 from torch_geometric.data import Data
 
 # 모델 로드 함수

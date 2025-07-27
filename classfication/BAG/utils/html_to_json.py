@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup
 import networkx as nx
 
 # 저장할 파일 시작 번호 (사용자가 이 값을 변경할 수 있음)
-START_FILE_NUMBER = 109
+START_FILE_NUMBER = 36
 
 # BERT 모델 경로
 MODEL_PATH = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/Classfication/bert/gambling_bert_model"
 
 # 그래프 JSON 파일 저장 디렉토리
-GRAPH_SAVE_DIR = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/inference_json"
+GRAPH_SAVE_DIR = "/home/swlab/Desktop/illegal_gambling-detector/classfication/BAG/data/gnn/gnn_datset/test"
 
 def html_to_graph(html_content):
     """

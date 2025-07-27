@@ -91,6 +91,7 @@ venv.bak/
 *.pth
 *.model
 *.bin
+*.env
 
 *log*
 # macOS
