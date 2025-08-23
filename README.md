@@ -1,4 +1,5 @@
-### **[Tracking Illegal Gambling Website]** (2024.10 ~ 2025.7)  **[Won 2025-1 SKKU Co-Deeplearning Excellence Awards ]** 
+### **[Tracking Illegal Gambling Website]** (2024.10 ~ 2025.7)  
+**[Won 2025-1 SKKU Co-Deeplearning Excellence Awards ]** 
 <img width="873" height="1116" alt="Screenshot 2025-07-19 at 7 24 24 PM" src="https://github.com/user-attachments/assets/003d4af3-c702-47a9-9130-00a765f34eb5" />
 
 
